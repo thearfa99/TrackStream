@@ -8,7 +8,7 @@ const jwt = require("jsonwebtoken");
 
 const { authenticateToken } = require("./utilities.js");
 const User = require("./models/user.model.js");
-const Task = require("./models/task.model.js");
+const Task = require("./models/note.model.js");
 const config = require("./config.json");
 
 const app = express();
@@ -108,149 +108,152 @@ app.get("/get-user", authenticateToken, async (req, res) => {
     });
 });
 
-// Get All Tasks
-app.get("/tasks", authenticateToken, async (req, res) => {
-    const { user } = req.user;
+// Add Note
 
-    try {
-        const tasks = await Task.find({ userId: user._id });
-        return res.json({
-            error: false,
-            tasks,
-            message: "Tasks fetched successfully",
-        });
-    } catch (error) {
-        return res.status(500).json({
-            error: true,
-            message: "Internal Server Error",
-        });
-    }
-})
 
-// Add Task API
-app.post("/add-task", authenticateToken, async (req, res) => {
-    const { text, isComplete, description } = req.body;
-    const { user } = req.user;
+// // Get All Tasks
+// app.get("/tasks", authenticateToken, async (req, res) => {
+//     const { user } = req.user;
 
-    if (!text.trim()) {
-        return res.status(400).json({ error: true, message: "Please add a task" });
-    }
+//     try {
+//         const tasks = await Task.find({ userId: user._id });
+//         return res.json({
+//             error: false,
+//             tasks,
+//             message: "Tasks fetched successfully",
+//         });
+//     } catch (error) {
+//         return res.status(500).json({
+//             error: true,
+//             message: "Internal Server Error",
+//         });
+//     }
+// })
 
-    try {
-        const task = new Task({
-            text,
-            isComplete: isComplete ?? false,
-            userId: user._id,
-            createdTime: new Date(),  // Set createdTime to now
-            description
-        });
-        await task.save();
-        return res.json({
-            error: false,
-            task,
-            message: "Task added successfully",
-        });
-    } catch (error) {
-        return res.status(500).json({
-            error: true,
-            message: "Internal Server Error",
-        });
-    }
-});
+// // Add Task API
+// app.post("/add-task", authenticateToken, async (req, res) => {
+//     const { text, isComplete, description } = req.body;
+//     const { user } = req.user;
 
-// Update Task API
-app.post("/update-task/:id", authenticateToken, async (req, res) => {
-    const { id } = req.params;
-    const { isComplete, description } = req.body;
+//     if (!text.trim()) {
+//         return res.status(400).json({ error: true, message: "Please add a task" });
+//     }
 
-    try {
-        let update = { isComplete: isComplete, description: description };
+//     try {
+//         const task = new Task({
+//             text,
+//             isComplete: isComplete ?? false,
+//             userId: user._id,
+//             createdTime: new Date(),  // Set createdTime to now
+//             description
+//         });
+//         await task.save();
+//         return res.json({
+//             error: false,
+//             task,
+//             message: "Task added successfully",
+//         });
+//     } catch (error) {
+//         return res.status(500).json({
+//             error: true,
+//             message: "Internal Server Error",
+//         });
+//     }
+// });
 
-        if (isComplete) {
-            update.completedTime = new Date();  // Set completedTime to now
-        } else {
-            update.completedTime = null;  // Clear completedTime
-        }
+// // Update Task API
+// app.post("/update-task/:id", authenticateToken, async (req, res) => {
+//     const { id } = req.params;
+//     const { isComplete, description } = req.body;
 
-        const task = await Task.findOneAndUpdate(
-            { _id: id },
-            update,
-            { new: true },
-        );
+//     try {
+//         let update = { isComplete: isComplete, description: description };
 
-        if (!task) {
-            return res.status(404).json({
-                error: true,
-                message: "Task not found or unauthorized",
-            });
-        }
+//         if (isComplete) {
+//             update.completedTime = new Date();  // Set completedTime to now
+//         } else {
+//             update.completedTime = null;  // Clear completedTime
+//         }
 
-        if (isComplete) {
-            const user = await User.findById(task.userId);
-            const mailOptions = {
-                From: process.env.EMAIL_USER,
-                To: user.email,
-                Subject: 'Task Completed',
-                TextBody: `Your task "${task.text}" has been marked as completed.\n\nCreated: ${new Date(task.createdTime).toLocaleString()}\nCompleted: ${new Date(task.completedTime).toLocaleString()}`
-            };
+//         const task = await Task.findOneAndUpdate(
+//             { _id: id },
+//             update,
+//             { new: true },
+//         );
 
-            postmarkClient.sendEmail(mailOptions, (error, result) => {
-                if (error) {
-                    console.error('Error sending email:', error);
-                    return res.status(500).json({
-                        error: true,
-                        message: "Error sending email",
-                    });
-                } else {
-                    console.log('Email sent:', result);
-                    return res.json({
-                        error: false,
-                        task,
-                        message: "Task updated and email sent successfully",
-                    });
-                }
-            });
-        } else {
-            return res.json({
-                error: false,
-                task,
-                message: "Task updated successfully",
-            });
-        }
-    } catch (error) {
-        return res.status(500).json({
-            error: true,
-            message: error.message || "Internal Server Error",
-        });
-    }
-});
+//         if (!task) {
+//             return res.status(404).json({
+//                 error: true,
+//                 message: "Task not found or unauthorized",
+//             });
+//         }
 
-// Delete Task API
-app.delete("/delete-task/:id", authenticateToken, async (req, res) => {
-    const { id } = req.params;
+//         if (isComplete) {
+//             const user = await User.findById(task.userId);
+//             const mailOptions = {
+//                 From: process.env.EMAIL_USER,
+//                 To: user.email,
+//                 Subject: 'Task Completed',
+//                 TextBody: `Your task "${task.text}" has been marked as completed.\n\nCreated: ${new Date(task.createdTime).toLocaleString()}\nCompleted: ${new Date(task.completedTime).toLocaleString()}`
+//             };
 
-    try {
-        const task = await Task.findOneAndDelete({ _id: id, userId: req.user.user._id });
+//             postmarkClient.sendEmail(mailOptions, (error, result) => {
+//                 if (error) {
+//                     console.error('Error sending email:', error);
+//                     return res.status(500).json({
+//                         error: true,
+//                         message: "Error sending email",
+//                     });
+//                 } else {
+//                     console.log('Email sent:', result);
+//                     return res.json({
+//                         error: false,
+//                         task,
+//                         message: "Task updated and email sent successfully",
+//                     });
+//                 }
+//             });
+//         } else {
+//             return res.json({
+//                 error: false,
+//                 task,
+//                 message: "Task updated successfully",
+//             });
+//         }
+//     } catch (error) {
+//         return res.status(500).json({
+//             error: true,
+//             message: error.message || "Internal Server Error",
+//         });
+//     }
+// });
 
-        if (!task) {
-            return res.status(404).json({
-                error: true,
-                message: "Task not found or unauthorized",
-            });
-        }
+// // Delete Task API
+// app.delete("/delete-task/:id", authenticateToken, async (req, res) => {
+//     const { id } = req.params;
 
-        return res.json({
-            error: false,
-            message: "Task deleted successfully",
-        });
-    } catch (error) {
-        console.error("Error deleting task:", error);
-        return res.status(500).json({
-            error: true,
-            message: "Internal Server Error",
-        });
-    }
-});
+//     try {
+//         const task = await Task.findOneAndDelete({ _id: id, userId: req.user.user._id });
+
+//         if (!task) {
+//             return res.status(404).json({
+//                 error: true,
+//                 message: "Task not found or unauthorized",
+//             });
+//         }
+
+//         return res.json({
+//             error: false,
+//             message: "Task deleted successfully",
+//         });
+//     } catch (error) {
+//         console.error("Error deleting task:", error);
+//         return res.status(500).json({
+//             error: true,
+//             message: "Internal Server Error",
+//         });
+//     }
+// });
 
 module.exports = app;
 
