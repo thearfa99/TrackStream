@@ -110,20 +110,29 @@ app.get("/get-user", authenticateToken, async (req, res) => {
 
 // Add Note
 app.post("/add-note", authenticateToken, async (req, res) => {
-    const { title, content, tags, isPinned, createdTime, completedTime, status, priority, assignedUsers } = req.body;
+    const { title, content, tags, isPinned, isComplete, status, priority, assignedUsers } = req.body;
     const { user } = req.user;
 
-    if (!text.trim()) {
+    if (!title.trim()) {
         return res.status(400).json({ error: true, message: "Please add a task" });
     }
 
+    // if (!content || !content.trim()) {
+    //     return res.status(400).json({ error: true, message: "Content is required" });
+    // }
+
     try {
         const task = new Task({
-            text,
+            title,
+            content,
+            tags,
+            isPinned,
             isComplete: isComplete ?? false,
+            createdTime: new Date(),
+            status,
+            priority,
+            assignedUsers,
             userId: user._id,
-            createdTime: new Date(),  // Set createdTime to now
-            description
         });
         await task.save();
         return res.json({
