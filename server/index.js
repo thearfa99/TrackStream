@@ -167,37 +167,6 @@ app.post("/add-note", authenticateToken, async (req, res) => {
 //     }
 // })
 
-// // Add Task API
-// app.post("/add-task", authenticateToken, async (req, res) => {
-//     const { text, isComplete, description } = req.body;
-//     const { user } = req.user;
-
-//     if (!text.trim()) {
-//         return res.status(400).json({ error: true, message: "Please add a task" });
-//     }
-
-//     try {
-//         const task = new Task({
-//             text,
-//             isComplete: isComplete ?? false,
-//             userId: user._id,
-//             createdTime: new Date(),  // Set createdTime to now
-//             description
-//         });
-//         await task.save();
-//         return res.json({
-//             error: false,
-//             task,
-//             message: "Task added successfully",
-//         });
-//     } catch (error) {
-//         return res.status(500).json({
-//             error: true,
-//             message: "Internal Server Error",
-//         });
-//     }
-// });
-
 // // Update Task API
 // app.post("/update-task/:id", authenticateToken, async (req, res) => {
 //     const { id } = req.params;
