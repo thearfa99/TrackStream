@@ -1,10 +1,9 @@
 require("dotenv").config();
-const postmark = require("postmark");
 const mongoose = require("mongoose");
 const express = require("express");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
-// const bcrypt = require("bcrypt");
+const postmark = require("postmark");
 
 const { authenticateToken } = require("./utilities.js");
 const User = require("./models/user.model.js");
@@ -16,20 +15,6 @@ const app = express();
 // Postmark client set up
 const postmarkClient = new postmark.ServerClient(process.env.POSTMARK_API_TOKEN);
 
-//To ensure password lenght of 6 char and 1 special char
-const validatePassword = (password) => {
-    const minLength = 6;
-    const specialCharPattern = /[!@#$%^&*(),.?":{}|<>]/;
-    
-    if (password.length < minLength) {
-      return false;
-    }
-    if (!specialCharPattern.test(password)) {
-      return false;
-    }
-    return true;
-  };
-
 app.listen(8000, () => {
     console.log('Server started on port 8000');
 });
@@ -39,6 +24,7 @@ mongoose.connect(config.connectionString);
 app.use(express.json());
 app.use(cors({ origin: "*" }));
 
+// Root Endpoint
 app.get("/", (req, res) => {
     res.json({ data: "hello" });
 });
@@ -108,18 +94,14 @@ app.get("/get-user", authenticateToken, async (req, res) => {
     });
 });
 
-// Add Note
-app.post("/add-note", authenticateToken, async (req, res) => {
+// Add Task API
+app.post("/add-task", authenticateToken, async (req, res) => {
     const { title, content, tags, isPinned, isComplete, status, priority, assignedUsers } = req.body;
     const { user } = req.user;
 
     if (!title.trim()) {
         return res.status(400).json({ error: true, message: "Please add a task" });
     }
-
-    // if (!content || !content.trim()) {
-    //     return res.status(400).json({ error: true, message: "Content is required" });
-    // }
 
     try {
         const task = new Task({
@@ -148,118 +130,117 @@ app.post("/add-note", authenticateToken, async (req, res) => {
     }
 });
 
-// // Get All Tasks
-// app.get("/tasks", authenticateToken, async (req, res) => {
-//     const { user } = req.user;
+// Get All Tasks API
+app.get("/tasks", authenticateToken, async (req, res) => {
+    const { user } = req.user;
 
-//     try {
-//         const tasks = await Task.find({ userId: user._id });
-//         return res.json({
-//             error: false,
-//             tasks,
-//             message: "Tasks fetched successfully",
-//         });
-//     } catch (error) {
-//         return res.status(500).json({
-//             error: true,
-//             message: "Internal Server Error",
-//         });
-//     }
-// })
+    try {
+        const tasks = await Task.find({ userId: user._id });
+        return res.json({
+            error: false,
+            tasks,
+            message: "Tasks fetched successfully",
+        });
+    } catch (error) {
+        return res.status(500).json({
+            error: true,
+            message: "Internal Server Error",
+        });
+    }
+});
 
-// // Update Task API
-// app.post("/update-task/:id", authenticateToken, async (req, res) => {
-//     const { id } = req.params;
-//     const { isComplete, description } = req.body;
+// Update Task API
+app.post("/update-task/:id", authenticateToken, async (req, res) => {
+    const { id } = req.params;
+    const { isComplete, content, status, priority, tags } = req.body;
 
-//     try {
-//         let update = { isComplete: isComplete, description: description };
+    try {
+        let update = { isComplete, content, status, priority, tags };
 
-//         if (isComplete) {
-//             update.completedTime = new Date();  // Set completedTime to now
-//         } else {
-//             update.completedTime = null;  // Clear completedTime
-//         }
+        if (isComplete) {
+            update.completedTime = new Date();  // Set completedTime to now
+        } else {
+            update.completedTime = null;  // Clear completedTime
+        }
 
-//         const task = await Task.findOneAndUpdate(
-//             { _id: id },
-//             update,
-//             { new: true },
-//         );
+        const task = await Task.findOneAndUpdate(
+            { _id: id, userId: req.user.user._id },
+            update,
+            { new: true }
+        );
 
-//         if (!task) {
-//             return res.status(404).json({
-//                 error: true,
-//                 message: "Task not found or unauthorized",
-//             });
-//         }
+        if (!task) {
+            return res.status(404).json({
+                error: true,
+                message: "Task not found or unauthorized",
+            });
+        }
 
-//         if (isComplete) {
-//             const user = await User.findById(task.userId);
-//             const mailOptions = {
-//                 From: process.env.EMAIL_USER,
-//                 To: user.email,
-//                 Subject: 'Task Completed',
-//                 TextBody: `Your task "${task.text}" has been marked as completed.\n\nCreated: ${new Date(task.createdTime).toLocaleString()}\nCompleted: ${new Date(task.completedTime).toLocaleString()}`
-//             };
+        if (isComplete) {
+            const user = await User.findById(task.userId);
+            const mailOptions = {
+                From: process.env.EMAIL_USER,
+                To: user.email,
+                Subject: 'Task Completed',
+                TextBody: `Your task "${task.title}" has been marked as completed.\n\nCreated: ${new Date(task.createdTime).toLocaleString()}\nCompleted: ${new Date(task.completedTime).toLocaleString()}`
+            };
 
-//             postmarkClient.sendEmail(mailOptions, (error, result) => {
-//                 if (error) {
-//                     console.error('Error sending email:', error);
-//                     return res.status(500).json({
-//                         error: true,
-//                         message: "Error sending email",
-//                     });
-//                 } else {
-//                     console.log('Email sent:', result);
-//                     return res.json({
-//                         error: false,
-//                         task,
-//                         message: "Task updated and email sent successfully",
-//                     });
-//                 }
-//             });
-//         } else {
-//             return res.json({
-//                 error: false,
-//                 task,
-//                 message: "Task updated successfully",
-//             });
-//         }
-//     } catch (error) {
-//         return res.status(500).json({
-//             error: true,
-//             message: error.message || "Internal Server Error",
-//         });
-//     }
-// });
+            postmarkClient.sendEmail(mailOptions, (error, result) => {
+                if (error) {
+                    console.error('Error sending email:', error);
+                    return res.status(500).json({
+                        error: true,
+                        message: "Error sending email",
+                    });
+                } else {
+                    console.log('Email sent:', result);
+                    return res.json({
+                        error: false,
+                        task,
+                        message: "Task updated and email sent successfully",
+                    });
+                }
+            });
+        } else {
+            return res.json({
+                error: false,
+                task,
+                message: "Task updated successfully",
+            });
+        }
+    } catch (error) {
+        return res.status(500).json({
+            error: true,
+            message: error.message || "Internal Server Error",
+        });
+    }
+});
 
-// // Delete Task API
-// app.delete("/delete-task/:id", authenticateToken, async (req, res) => {
-//     const { id } = req.params;
+// Delete Task API
+app.delete("/delete-task/:id", authenticateToken, async (req, res) => {
+    const { id } = req.params;
 
-//     try {
-//         const task = await Task.findOneAndDelete({ _id: id, userId: req.user.user._id });
+    try {
+        const task = await Task.findOneAndDelete({ _id: id, userId: req.user.user._id });
 
-//         if (!task) {
-//             return res.status(404).json({
-//                 error: true,
-//                 message: "Task not found or unauthorized",
-//             });
-//         }
+        if (!task) {
+            return res.status(404).json({
+                error: true,
+                message: "Task not found or unauthorized",
+            });
+        }
 
-//         return res.json({
-//             error: false,
-//             message: "Task deleted successfully",
-//         });
-//     } catch (error) {
-//         console.error("Error deleting task:", error);
-//         return res.status(500).json({
-//             error: true,
-//             message: "Internal Server Error",
-//         });
-//     }
-// });
+        return res.json({
+            error: false,
+            message: "Task deleted successfully",
+        });
+    } catch (error) {
+        console.error("Error deleting task:", error);
+        return res.status(500).json({
+            error: true,
+            message: "Internal Server Error",
+        });
+    }
+});
 
 module.exports = app;
-
