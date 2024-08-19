@@ -3,12 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/navbar/navbar';
 import Todo from '../../components/todo/todo';
 import Notecard from '../../components/cards/notecard';
+import moment from "moment";
 import axiosInstance from '../../utils/axiosinstance';
 import { MdAdd, MdOutlineAlarmAdd } from "react-icons/md";
 import Addeditnotes from './addeditnotes';
 import Modal from "react-modal";
 
 const Home = () => {
+  const [openAddEditModal, setOpenAddEditModal] = useState({
+    isShown: false,
+    type: "add",
+    data: null,
+  })
+
+  const [allNotes, setAllNotes] = useState([])
   const [userInfo, setUserInfo] = useState(null);
   const navigate = useNavigate();
 
@@ -27,31 +35,43 @@ const Home = () => {
     }
   };
 
+  // Get all notes
+  const getAllNotes = async () => {
+    try {
+      const response = await axiosInstance.get("/get-all-notes");
+
+      if (response.data && response.data.notes){
+        setAllNotes(response.data.notes);
+      }
+    } catch (error) {
+      console.log("An unexpected error occurred. Please try again.")
+    }
+  }
+
   useEffect(() => {
+    getAllNotes();
     getUserInfo();
   }, []);
-
-  const [openAddEditModal, setOpenAddEditModal] = useState({
-    isShown: false,
-    type: "add",
-    data: null,
-  })
 
   return (
     <>
       <Navbar userInfo={userInfo}/>
+
       <div className='container mx-auto'>
         <div className='grid grid-cols-3 gap-4 mt-8'>
-          <Notecard 
-          title="Meeting on 7th Aug" 
-          date="7th Aug 2024 11:59 AM"
-          content="Meeting on 7th Aug Meeting on 7th Aug"
-          tags="#Meeting"
-          isPinned={true}
-          onEdit={()=>{}}
-          onDelete={()=>{}}
-          onPinNote={()=>{}}
-          />
+          {allNotes.map((item, index) => (
+            <Notecard 
+              key={item._id}
+              title={item.title}
+              date={item.createdOn}
+              content={item.content}
+              tags={item.tags}
+              isPinned={item.isPinned}
+              onEdit={()=>{}}
+              onDelete={()=>{}}
+              onPinNote={()=>{}}
+            />
+          ))}
         </div>
       </div>
 
