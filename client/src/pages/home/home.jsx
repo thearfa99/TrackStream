@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/navbar/navbar';
 import Todo from '../../components/todo/todo';
 import Notecard from '../../components/cards/notecard';
-import moment from "moment";
 import axiosInstance from '../../utils/axiosinstance';
 import { MdAdd, MdOutlineAlarmAdd } from "react-icons/md";
 import Addeditnotes from './addeditnotes';
@@ -100,6 +99,7 @@ const Home = () => {
       onClose={() => {
         setOpenAddEditModal({ isShown: false, type:"add", data: null})
       }}
+      getAllNotes={getAllNotes}
       />
     </Modal>
       {/* <Todo /> */}
