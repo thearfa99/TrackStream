@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/navbar/navbar';
-import Todo from '../../components/todo/todo';
+import Toast from '../../components/toastmessage/toast';
 import Notecard from '../../components/cards/notecard';
 import axiosInstance from '../../utils/axiosinstance';
 import { MdAdd, MdOutlineAlarmAdd } from "react-icons/md";
@@ -15,6 +15,12 @@ const Home = () => {
     data: null,
   })
 
+  const [showToastMsg, setShowToastMsg] = useState({
+    isShown: false,
+    message: "",
+    type: "add",
+  })
+
   const [allNotes, setAllNotes] = useState([])
   const [userInfo, setUserInfo] = useState(null);
 
@@ -22,6 +28,21 @@ const Home = () => {
 
   const handleEdit = (noteDetails) => {
     setOpenAddEditModal({ isShown: true, data: noteDetails, type: "edit"})
+  }
+
+  const showToastMessage = (message, type) => {
+    setShowToastMsg({
+      isShown: true,
+      message,
+      type,
+    })
+  }
+
+  const handleCloseToast = () => {
+    setShowToastMsg({
+      isShown: false,
+      message: "",
+    })
   }
 
   // Get User Info
@@ -105,9 +126,16 @@ const Home = () => {
         setOpenAddEditModal({ isShown: false, type:"add", data: null})
       }}
       getAllNotes={getAllNotes}
+      showToastMessage={showToastMessage}
       />
     </Modal>
-      {/* <Todo /> */}
+
+    <Toast
+      isShown={showToastMsg.isShown}
+      message={showToastMsg.message}
+      type={showToastMsg.type}
+      onClose={handleCloseToast}
+    />
     </>
   );
 };
