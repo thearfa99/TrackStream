@@ -290,7 +290,7 @@ app.get("/search-notes/", authenticateToken, async (req, res) => {
         return res.json({
             error: false,
             notes: matchingNotes,
-            message: "Notes matching th serach query retrieved successfully"
+            message: "Notes matching the serach query retrieved successfully"
         })
     } catch (error) {
         return res.status(500).json({

@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import ProfileInfo from '../cards/profileinfo'
 import Searchbar from '../searchbar/searchbar';
 
-const Navbar = ( { userInfo, onSearchNote } ) => {
+const Navbar = ( { userInfo, onSearchNote, handleClearSearch } ) => {
   const [searchQuery, setSearchQuery] = useState("")
 
   const handleSearch = () => {
@@ -12,7 +12,8 @@ const Navbar = ( { userInfo, onSearchNote } ) => {
   }
 
   const onClearSearch = () => {
-    setSearchQuery("")
+    setSearchQuery("");
+    handleClearSearch()
   }
 
   return (

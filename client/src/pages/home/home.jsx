@@ -9,6 +9,7 @@ import { MdAdd, MdOutlineAlarmAdd } from "react-icons/md";
 import Addeditnotes from './addeditnotes';
 import Modal from "react-modal";
 import AddNotesImg from "../../assets/images/add-note.svg";
+import NoDataImg from "../../assets/images/no-data.svg";
 
 const Home = () => {
   const [openAddEditModal, setOpenAddEditModal] = useState({
@@ -115,6 +116,28 @@ const Home = () => {
     }
   }
 
+  // Pin
+  const updateIsPinned = async (noteData) => {
+    const noteId = noteData._id
+    try {
+      const response = await axiosInstance.put("/update-note-pinned/" + noteId, {
+        isPinned: !noteData.isPinned,
+      })
+
+      if (response.data && response.data.note) {
+          showToastMessage("Note Updated Successfully")
+          getAllNotes();
+      }
+    } catch (error) {
+        console.log(error)
+    }
+  }
+
+  const handleClearSearch = () => {
+    setIsSearch(false)
+    getAllNotes()
+  }
+
   useEffect(() => {
     getAllNotes();
     getUserInfo();
@@ -122,7 +145,11 @@ const Home = () => {
 
   return (
     <>
-      <Navbar userInfo={userInfo} onSearchNote={onSearchNote}/>
+      <Navbar 
+      userInfo={userInfo} 
+      onSearchNote={onSearchNote}
+      handleClearSearch={handleClearSearch}
+      />
 
       <div className='container mx-auto'>
         {allNotes.length > 0 ? (
@@ -137,12 +164,14 @@ const Home = () => {
               isPinned={item.isPinned}
               onEdit={()=> handleEdit(item)}
               onDelete={()=>deleteNote(item)}
-              onPinNote={()=>{}}
+              onPinNote={()=>updateIsPinned(item)}
             />
           ))}
         </div>
         ) : (
-          <EmptyCard imgSrc={AddNotesImg} message={`Start creating your first Task/Note! Click the 'Add' button to get started`} />
+          <EmptyCard 
+          imgSrc={isSearch ? NoDataImg : AddNotesImg} 
+          message={isSearch ? `Oops! No Results found with that search query!` : `Start creating your first Task/Note! Click the 'Add' button to get started`} />
         )}
       </div>
 
