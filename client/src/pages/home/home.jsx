@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/navbar/navbar';
 import Toast from '../../components/toastmessage/toast';
 import Notecard from '../../components/cards/notecard';
+import EmptyCard from '../../components/emptycard/emptycard';
 import axiosInstance from '../../utils/axiosinstance';
 import { MdAdd, MdOutlineAlarmAdd } from "react-icons/md";
 import Addeditnotes from './addeditnotes';
@@ -105,7 +106,8 @@ const Home = () => {
       <Navbar userInfo={userInfo}/>
 
       <div className='container mx-auto'>
-        <div className='grid grid-cols-3 gap-4 mt-8'>
+        {allNotes.length > 0 ? (
+          <div className='grid grid-cols-3 gap-4 mt-8'>
           {allNotes.map((item, index) => (
             <Notecard 
               key={item._id}
@@ -120,6 +122,9 @@ const Home = () => {
             />
           ))}
         </div>
+        ) : (
+          <EmptyCard />
+        )}
       </div>
 
       <button className='w-16 h-16 flex items-center justify-center rounded-2xl bg-primary hover:bg-blue-600 absolute right-10 bottom-10' 
