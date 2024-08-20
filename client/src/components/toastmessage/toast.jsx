@@ -11,7 +11,7 @@ const toast = ({ isShown, message, type, onClose }) => {
     return () => {
       clearTimeout(timeoutId);
     }
-  }, [])
+  }, [onClose])
 
   return (
     <div className={`absolute top-20 right-6 transition-all duration-400 ${
