@@ -2,11 +2,13 @@ import React, { useState } from 'react'
 import ProfileInfo from '../cards/profileinfo'
 import Searchbar from '../searchbar/searchbar';
 
-const Navbar = ( { userInfo } ) => {
+const Navbar = ( { userInfo, onSearchNote } ) => {
   const [searchQuery, setSearchQuery] = useState("")
 
   const handleSearch = () => {
-
+    if(searchQuery){
+      onSearchNote(searchQuery)
+    }
   }
 
   const onClearSearch = () => {
