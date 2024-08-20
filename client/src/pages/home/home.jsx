@@ -8,6 +8,7 @@ import axiosInstance from '../../utils/axiosinstance';
 import { MdAdd, MdOutlineAlarmAdd } from "react-icons/md";
 import Addeditnotes from './addeditnotes';
 import Modal from "react-modal";
+import AddNotesImg from "../../assets/images/add-note.svg";
 
 const Home = () => {
   const [openAddEditModal, setOpenAddEditModal] = useState({
@@ -123,7 +124,7 @@ const Home = () => {
           ))}
         </div>
         ) : (
-          <EmptyCard />
+          <EmptyCard imgSrc={AddNotesImg} message={`Start creating your first Task/Note! Click the 'Add' button to get started`} />
         )}
       </div>
 
