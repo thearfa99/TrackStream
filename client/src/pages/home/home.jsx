@@ -75,7 +75,7 @@ const Home = () => {
 
   // Delete Note
   const deleteNote = async (data) => {
-    const noteId = noteData._id
+    const noteId = data._id
 
     try {
       const response = await axiosInstance.delete("/delete-note/" + noteId);
@@ -115,7 +115,7 @@ const Home = () => {
               tags={item.tags}
               isPinned={item.isPinned}
               onEdit={()=> handleEdit(item)}
-              onDelete={()=>{item}}
+              onDelete={()=>deleteNote(item)}
               onPinNote={()=>{}}
             />
           ))}
