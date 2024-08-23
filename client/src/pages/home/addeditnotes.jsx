@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Taginput from '../../components/input/taginput'
 import { MdClose } from 'react-icons/md';
 import axiosInstance from '../../utils/axiosinstance';
@@ -7,8 +7,28 @@ const addeditnotes = ({ noteData, type, getAllNotes, onClose, showToastMessage }
     const [title, setTitle] = useState(noteData?.title || "");
     const [content, setContent] = useState(noteData?.content || "");
     const [tags, setTags] = useState(noteData?.tags || []);
+    const [status, setStatus] = useState(noteData?.status || "To-Do");
+    const [priority, setPriority] = useState(noteData?.priority || "Default");
+    const [assignedUsers, setAssignedUsers] = useState(noteData?.assignedUsers || []);
 
     const [error, setError] = useState(null);
+    const [allUsers, setAllUsers] = useState([]);
+
+    useEffect(() => {
+        // Fetch the list of users when the component mounts
+        const fetchUsers = async () => {
+            try {
+                const response = await axiosInstance.get("/users");
+                if (response.data && response.data.users) {
+                    setAllUsers(response.data.users);
+                }
+            } catch (error) {
+                console.error("Failed to fetch users:", error);
+            }
+        };
+
+        fetchUsers();
+    }, []);
 
     // Add Note
     const addNewNote = async () => {
@@ -17,12 +37,15 @@ const addeditnotes = ({ noteData, type, getAllNotes, onClose, showToastMessage }
                 title,
                 content,
                 tags,
-            })
+                status,  // Include status in the request
+                priority, // Include priority in the request
+                assignedUsers, // Include assigned users in the request
+            });
 
             if (response.data && response.data.note) {
-                showToastMessage("Note Added Successfully")
-                getAllNotes()
-                onClose()
+                showToastMessage("Note Added Successfully");
+                getAllNotes();
+                onClose();
             }
         } catch (error) {
             if ( 
@@ -36,17 +59,20 @@ const addeditnotes = ({ noteData, type, getAllNotes, onClose, showToastMessage }
     };
 
     // Edit Note
-    const editNote = async() => {
-        const noteId = noteData._id
+    const editNote = async () => {
+        const noteId = noteData._id;
         try {
             const response = await axiosInstance.put("/edit-note/" + noteId, {
                 title,
                 content,
                 tags,
-            })
+                status,  // Include status in the request
+                priority, // Include priority in the request
+                assignedUsers, // Include assigned users in the request
+            });
 
             if (response.data && response.data.note) {
-                showToastMessage("Note Updated Successfully")
+                showToastMessage("Note Updated Successfully");
                 getAllNotes();
                 onClose();
             }
@@ -74,54 +100,96 @@ const addeditnotes = ({ noteData, type, getAllNotes, onClose, showToastMessage }
 
         setError("");
 
-        if (type === 'edit'){
-            editNote()
-        }else{
-            addNewNote()
+        if (type === 'edit') {
+            editNote();
+        } else {
+            addNewNote();
         }
-    }
+    };
 
-  return (
-    <div className='relative'>
-        <button className='w-10 h-10 rounded-full flex items-center justify-center absolute -top-3 -right-3 hover:bg-slate-50' onClick={onClose}>
-            <MdClose className='text-xl text-slate-400'/> 
-        </button>
+    return (
+        <div className='relative'>
+            <button className='w-10 h-10 rounded-full flex items-center justify-center absolute -top-3 -right-3 hover:bg-slate-50' onClick={onClose}>
+                <MdClose className='text-xl text-slate-400'/> 
+            </button>
 
-        <div className='flex flex-col gap-2'>
-            <label className='input-label'>TITLE</label>
-            <input
-                type="text"
-                className='text-2xl text-slate-950 outline-none'
-                placeholder='Add a Title'
-                value={title}
-                onChange={({ target }) => setTitle(target.value)}
-            />
+            <div className='flex flex-col gap-2'>
+                <label className='input-label'>TITLE</label>
+                <input
+                    type="text"
+                    className='text-2xl text-slate-950 outline-none'
+                    placeholder='Add a Title'
+                    value={title}
+                    onChange={({ target }) => setTitle(target.value)}
+                />
+            </div>
+
+            <div className='flex flex-col gap-2 mt-4'>
+                <label className='input-label'>CONTENT</label>
+                <textarea
+                    type="text"
+                    className='text-sm text-slate-950 outline-none bg-slate-50 p-2 rounded'
+                    placeholder='Content'
+                    rows={10}
+                    value={content}
+                    onChange={({ target }) => setContent(target.value)}
+                />
+            </div>
+
+            <div className='mt-3'>
+                <label className='input-label'>TAGS</label>
+                <Taginput tags={tags} setTags={setTags} />
+            </div>
+
+            <div className='mt-3'>
+                <label className='input-label'>STATUS</label>
+                <select
+                    className='text-sm text-slate-950 outline-none bg-slate-50 p-2 rounded'
+                    value={status}
+                    onChange={({ target }) => setStatus(target.value)}
+                >
+                    <option value="To-Do">To-Do</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Complete">Complete</option>
+                </select>
+            </div>
+
+            <div className='mt-3'>
+                <label className='input-label'>PRIORITY</label>
+                <select
+                    className='text-sm text-slate-950 outline-none bg-slate-50 p-2 rounded'
+                    value={priority}
+                    onChange={({ target }) => setPriority(target.value)}
+                >
+                    <option value="Default">Default</option>
+                    <option value="Low Priority">Low Priority</option>
+                    <option value="High Priority">High Priority</option>
+                </select>
+            </div>
+
+            <div className='mt-3'>
+                <label className='input-label'>ASSIGN USERS</label>
+                <select
+                    multiple
+                    className='text-sm text-slate-950 outline-none bg-slate-50 p-2 rounded'
+                    value={assignedUsers}
+                    onChange={({ target }) => setAssignedUsers(Array.from(target.selectedOptions, option => option.value))}
+                >
+                    {allUsers.map(user => (
+                        <option key={user.id} value={user.id}>
+                            {user.name}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
+            {error && <p className='text-red-500 text-xs pt-4'>{error}</p>}
+
+            <button className='btn-primary font-medium mt-5 p-3' onClick={handleAddNote}>
+                {type === "edit" ? "UPDATE" : "ADD"}
+            </button>
         </div>
-
-        <div className='flex flex-col gap-2 mt-4'>
-            <label className='input-label'>CONTENT</label>
-            <textarea
-                type="text"
-                className='text-sm text-slate-950 outline-none bg-slate-50 p-2 rounded'
-                placeholder='Content'
-                rows={10}
-                value={content}
-                onChange={({ target }) => setContent(target.value)}
-            />
-        </div>
-
-        <div className='mt-3'>
-            <label className='input-label'>TAGS</label>
-            <Taginput tags={tags} setTags={setTags} />
-        </div>
-
-        {error && <p className='text-red-500 text-xs pt-4'>{error}</p>}
-
-        <button className='btn-primary font-medium mt-5 p-3' onClick={handleAddNote}>
-            {type === "edit" ? "UPDATE" : "ADD"}
-        </button>
-    </div>
-  )
+    )
 }
 
 export default addeditnotes;
