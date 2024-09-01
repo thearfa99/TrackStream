@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react'
-import Taginput from '../../components/input/taginput'
+import React, { useState, useEffect } from 'react';
+import Select from 'react-select';
+import Taginput from '../../components/input/taginput';
 import { MdClose } from 'react-icons/md';
 import axiosInstance from '../../utils/axiosinstance';
 
@@ -20,7 +21,11 @@ const addeditnotes = ({ noteData, type, getAllNotes, onClose, showToastMessage }
             try {
                 const response = await axiosInstance.get("/users");
                 if (response.data && response.data.users) {
-                    setAllUsers(response.data.users);
+                    const userOptions = response.data.users.map(user => ({
+                        value: user.id,
+                        label: user.name,
+                    }));
+                    setAllUsers(userOptions);
                 }
             } catch (error) {
                 console.error("Failed to fetch users:", error);
@@ -30,16 +35,15 @@ const addeditnotes = ({ noteData, type, getAllNotes, onClose, showToastMessage }
         fetchUsers();
     }, []);
 
-    // Add Note
     const addNewNote = async () => {
         try {
             const response = await axiosInstance.post("/add-note", {
                 title,
                 content,
                 tags,
-                status,  // Include status in the request
-                priority, // Include priority in the request
-                assignedUsers, // Include assigned users in the request
+                status,
+                priority,
+                assignedUsers: assignedUsers.map(user => user.value), // Use the value property
             });
 
             if (response.data && response.data.note) {
@@ -58,7 +62,6 @@ const addeditnotes = ({ noteData, type, getAllNotes, onClose, showToastMessage }
         }
     };
 
-    // Edit Note
     const editNote = async () => {
         const noteId = noteData._id;
         try {
@@ -66,9 +69,9 @@ const addeditnotes = ({ noteData, type, getAllNotes, onClose, showToastMessage }
                 title,
                 content,
                 tags,
-                status,  // Include status in the request
-                priority, // Include priority in the request
-                assignedUsers, // Include assigned users in the request
+                status,
+                priority,
+                assignedUsers: assignedUsers.map(user => user.value), // Use the value property
             });
 
             if (response.data && response.data.note) {
@@ -169,18 +172,14 @@ const addeditnotes = ({ noteData, type, getAllNotes, onClose, showToastMessage }
 
             <div className='mt-3'>
                 <label className='input-label'>ASSIGN USERS</label>
-                <select
-                    multiple
-                    className='text-sm text-slate-950 outline-none bg-slate-50 p-2 rounded'
+                <Select
+                    isMulti
+                    options={allUsers}
                     value={assignedUsers}
-                    onChange={({ target }) => setAssignedUsers(Array.from(target.selectedOptions, option => option.value))}
-                >
-                    {allUsers.map(user => (
-                        <option key={user.id} value={user.id}>
-                            {user.name}
-                        </option>
-                    ))}
-                </select>
+                    onChange={setAssignedUsers}
+                    className='text-sm text-slate-950 outline-none bg-slate-50 p-2 rounded'
+                    placeholder="Select Users..."
+                />
             </div>
 
             {error && <p className='text-red-500 text-xs pt-4'>{error}</p>}
