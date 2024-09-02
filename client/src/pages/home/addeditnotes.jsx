@@ -10,7 +10,14 @@ const addeditnotes = ({ noteData, type, getAllNotes, onClose, showToastMessage }
     const [tags, setTags] = useState(noteData?.tags || []);
     const [status, setStatus] = useState(noteData?.status || "To-Do");
     const [priority, setPriority] = useState(noteData?.priority || "Default");
-    const [assignedUsers, setAssignedUsers] = useState(noteData?.assignedUsers || []);
+    
+    // Update to correctly map initial assignedUsers from noteData
+    const [assignedUsers, setAssignedUsers] = useState(
+        noteData?.assignedUsers?.map(user => ({
+            value: user._id,
+            label: user.name,
+        })) || []
+    );
 
     const [error, setError] = useState(null);
     const [allUsers, setAllUsers] = useState([]);
@@ -178,7 +185,7 @@ const addeditnotes = ({ noteData, type, getAllNotes, onClose, showToastMessage }
                     value={assignedUsers}
                     onChange={setAssignedUsers}
                     className='text-sm text-slate-950 outline-none bg-slate-50 p-2 rounded'
-                    placeholder="Select Users..."
+                    placeholder="Select Users"
                 />
             </div>
 
@@ -188,7 +195,7 @@ const addeditnotes = ({ noteData, type, getAllNotes, onClose, showToastMessage }
                 {type === "edit" ? "UPDATE" : "ADD"}
             </button>
         </div>
-    )
+    );
 }
 
 export default addeditnotes;
