@@ -11,8 +11,8 @@ const noteSchema = new Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // User creating the task
     createdOn: { type: Date, default: Date.now }, 
     completedTime: { type: Date },
-    status: { type: String, required: false, default: "To-do" }, // To-do, In progress, Complete
-    priority: { type: String, required: false, default: "Default" }, // Default, Low Priority, High Priority
+    status: { type: String, enum: ["To-Do", "In Progress", "Review", "Completed"], default: "To-Do" }, // Add status field
+    priority: { type: String, enum: ["Low", "Medium", "High"], default: "Medium" }, // Add priority field
     assignedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Array of assigned user IDs
 });
 

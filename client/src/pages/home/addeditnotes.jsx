@@ -9,7 +9,7 @@ const addeditnotes = ({ noteData, type, getAllNotes, onClose, showToastMessage }
     const [content, setContent] = useState(noteData?.content || "");
     const [tags, setTags] = useState(noteData?.tags || []);
     const [status, setStatus] = useState(noteData?.status || "To-Do");
-    const [priority, setPriority] = useState(noteData?.priority || "Default");
+    const [priority, setPriority] = useState(noteData?.priority || "Medium");
     
     // Update to correctly map initial assignedUsers from noteData
     const [assignedUsers, setAssignedUsers] = useState(
@@ -160,6 +160,7 @@ const addeditnotes = ({ noteData, type, getAllNotes, onClose, showToastMessage }
                 >
                     <option value="To-Do">To-Do</option>
                     <option value="In Progress">In Progress</option>
+                    <option value="Review">Review</option>
                     <option value="Complete">Complete</option>
                 </select>
             </div>
@@ -171,9 +172,9 @@ const addeditnotes = ({ noteData, type, getAllNotes, onClose, showToastMessage }
                     value={priority}
                     onChange={({ target }) => setPriority(target.value)}
                 >
-                    <option value="Default">Default</option>
-                    <option value="Low Priority">Low Priority</option>
-                    <option value="High Priority">High Priority</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                    <option value="High">High</option>
                 </select>
             </div>
 
