@@ -143,6 +143,12 @@ const Home = () => {
     getUserInfo();
   }, []);
 
+  // Filter notes by status
+  const toDoNotes = allNotes.filter(note => note.status === "To-Do");
+  const inProgressNotes = allNotes.filter(note => note.status === "In Progress");
+  const reviewNotes = allNotes.filter(note => note.status === "Review");
+  const completeNotes = allNotes.filter(note => note.status === "Complete");
+
   return (
     <>
       <Navbar 
@@ -162,20 +168,74 @@ const Home = () => {
         </button>
 
         {allNotes.length > 0 ? (
-          <div className='grid grid-cols-3 gap-4'>
-            {allNotes.map((item, index) => (
-              <Notecard 
-                key={item._id}
-                title={item.title}
-                date={item.createdOn}
-                content={item.content}
-                tags={item.tags}
-                isPinned={item.isPinned}
-                onEdit={() => handleEdit(item)}
-                onDelete={() => deleteNote(item)}
-                onPinNote={() => updateIsPinned(item)}
-              />
-            ))}
+          <div className='grid grid-cols-4 gap-4 min-h-screen'> {/* Grid for 4 columns */}
+            <div className='bg-gray-100 p-4 rounded-md'> {/* To-Do Column */}
+              <h2 className='text-xl font-semibold mb-4'>To-Do</h2>
+              {toDoNotes.map((item) => (
+                <Notecard 
+                  key={item._id}
+                  title={item.title}
+                  date={item.createdOn}
+                  content={item.content}
+                  tags={item.tags}
+                  isPinned={item.isPinned}
+                  onEdit={() => handleEdit(item)}
+                  onDelete={() => deleteNote(item)}
+                  onPinNote={() => updateIsPinned(item)}
+                />
+              ))}
+            </div>
+
+            <div className='bg-gray-100 p-4 rounded-md'> {/* In Progress Column */}
+              <h2 className='text-xl font-semibold mb-4'>In Progress</h2>
+              {inProgressNotes.map((item) => (
+                <Notecard 
+                  key={item._id}
+                  title={item.title}
+                  date={item.createdOn}
+                  content={item.content}
+                  tags={item.tags}
+                  isPinned={item.isPinned}
+                  onEdit={() => handleEdit(item)}
+                  onDelete={() => deleteNote(item)}
+                  onPinNote={() => updateIsPinned(item)}
+                />
+              ))}
+            </div>
+
+            <div className='bg-gray-100 p-4 rounded-md'> {/* Review Column */}
+              <h2 className='text-xl font-semibold mb-4'>Review</h2>
+              {reviewNotes.map((item) => (
+                <Notecard 
+                  key={item._id}
+                  title={item.title}
+                  date={item.createdOn}
+                  content={item.content}
+                  tags={item.tags}
+                  isPinned={item.isPinned}
+                  onEdit={() => handleEdit(item)}
+                  onDelete={() => deleteNote(item)}
+                  onPinNote={() => updateIsPinned(item)}
+                />
+              ))}
+            </div>
+
+            <div className='bg-gray-100 p-4 rounded-md'> {/* Complete Column */}
+              <h2 className='text-xl font-semibold mb-4'>Complete</h2>
+              {completeNotes.map((item) => (
+                <Notecard 
+                  key={item._id}
+                  title={item.title}
+                  date={item.createdOn}
+                  content={item.content}
+                  tags={item.tags}
+                  isPinned={item.isPinned}
+                  onEdit={() => handleEdit(item)}
+                  onDelete={() => deleteNote(item)}
+                  onPinNote={() => updateIsPinned(item)}
+                />
+              ))}
+            </div>
           </div>
         ) : (
           <EmptyCard 

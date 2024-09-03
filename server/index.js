@@ -126,8 +126,8 @@ app.post("/add-note", authenticateToken, async (req, res) => {
             tags: tags || [],
             userId: user._id,
             assignedUsers: assignedUsers || [],
-            status: status || "Pending", // Add status
-            priority: priority || "Medium", // Add priority
+            status: status,
+            priority: priority,
         });
 
         await note.save();
