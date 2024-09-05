@@ -146,16 +146,20 @@ const Home = () => {
   // Define priority order
   const priorityOrder = { "High": 1, "Medium": 2, "Low": 3 };
 
-  // Function to sort notes by priority
-  const sortByPriority = (notes) => {
-    return notes.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+  // Function to sort notes by priority, but keep pinned notes at the top
+  const sortByPriorityAndPin = (notes) => {
+    return notes.sort((a, b) => {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      return priorityOrder[a.priority] - priorityOrder[b.priority];
+    });
   };
 
-  // Filter and sort notes by status and priority
-  const toDoNotes = sortByPriority(allNotes.filter(note => note.status === "To-Do"));
-  const inProgressNotes = sortByPriority(allNotes.filter(note => note.status === "In Progress"));
-  const reviewNotes = sortByPriority(allNotes.filter(note => note.status === "Review"));
-  const completeNotes = sortByPriority(allNotes.filter(note => note.status === "Complete"));
+  // Filter and sort notes by status, pin, and priority
+  const toDoNotes = sortByPriorityAndPin(allNotes.filter(note => note.status === "To-Do"));
+  const inProgressNotes = sortByPriorityAndPin(allNotes.filter(note => note.status === "In Progress"));
+  const reviewNotes = sortByPriorityAndPin(allNotes.filter(note => note.status === "Review"));
+  const completeNotes = sortByPriorityAndPin(allNotes.filter(note => note.status === "Complete"));
 
   return (
     <>
@@ -275,12 +279,13 @@ const Home = () => {
         />
       </Modal>
 
-      <Toast
-        isShown={showToastMsg.isShown}
-        message={showToastMsg.message}
-        type={showToastMsg.type}
-        onClose={handleCloseToast}
-      />
+      {showToastMsg.isShown && (
+        <Toast 
+          message={showToastMsg.message}
+          type={showToastMsg.type}
+          handleCloseToast={handleCloseToast}
+        />
+      )}
     </>
   );
 };
