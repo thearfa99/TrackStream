@@ -132,6 +132,19 @@ app.post("/add-note", authenticateToken, async (req, res) => {
 
         await note.save();
 
+        // Notify assigned users via email
+        const assignedUserIds = assignedUsers || [];
+        const users = await User.find({ _id: { $in: assignedUserIds } });
+
+        users.forEach(user => {
+            postmarkClient.sendEmail({
+                From: process.env.FROM_EMAIL, // Your email address
+                To: user.email,
+                Subject: "Task Assigned",
+                TextBody: `Hello ${user.fullName},\n\nYou have been assigned a new task: "${title}".\n\nContent: ${content}\n\nPlease check your tasks for more details.\n\nBest regards,\nYour Team`,
+            });
+        });
+
         return res.json({
             error: false,
             note,
@@ -172,6 +185,19 @@ app.put("/edit-note/:noteId", authenticateToken, async (req, res) => {
         if (priority) note.priority = priority;
 
         await note.save();
+
+        // Notify assigned users via email
+        const assignedUserIds = assignedUsers || [];
+        const users = await User.find({ _id: { $in: assignedUserIds } });
+
+        users.forEach(user => {
+            postmarkClient.sendEmail({
+                From: process.env.FROM_EMAIL, // Your email address
+                To: user.email,
+                Subject: "Task Updated",
+                TextBody: `Hello ${user.fullName},\n\nThe task "${title}" has been updated.\n\nContent: ${content}\n\nPlease check your tasks for the latest details.\n\nBest regards,\nYour Team`,
+            });
+        });
 
         return res.json({
             error: false,
