@@ -169,7 +169,7 @@ const Home = () => {
         handleClearSearch={handleClearSearch}
       />
 
-<div className='container mx-auto mt-8'>
+      <div className='container mx-auto mt-8'>
         <div className='flex justify-between items-center mb-8'>
           <h1 className='text-3xl font-semibold'>Project Dashboard</h1>
           <button 
