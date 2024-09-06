@@ -9,11 +9,11 @@ const noteSchema = new Schema({
     isPinned: { type: Boolean, default: false }, // Enables pinning
     isComplete: { type: Boolean, default: false }, // Task Complete or Incomplete
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // User creating the task
-    createdOn: { type: Date, default: new Date().getTime()}, 
+    createdOn: { type: Date, default: Date.now }, 
     completedTime: { type: Date },
-    status: { type: String, required: false, default: "To-do" }, // To-do, In progress, Complete
-    priority: { type: String, required: false, default: "Default" }, // Default, Low Priority, High Priority
-    assignedUsers: { type: String, required: false, default: "" }, // Assigned to Users or general task
+    status: { type: String, enum: ["To-Do", "In Progress", "Review", "Complete"], default: "To-Do" }, // Add status field
+    priority: { type: String, enum: ["Low", "Medium", "High"], default: "Medium" }, // Add priority field
+    assignedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Array of assigned user IDs
 });
 
 module.exports = mongoose.model("Note", noteSchema);

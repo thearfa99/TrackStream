@@ -13,32 +13,33 @@ const config = require("./config.json");
 
 const app = express();
 
-// Postmark client set up
+// Postmark client setup
 const postmarkClient = new postmark.ServerClient(process.env.POSTMARK_API_TOKEN);
 
-//To ensure password lenght of 6 char and 1 special char
+// Password validation function
 const validatePassword = (password) => {
     const minLength = 6;
     const specialCharPattern = /[!@#$%^&*(),.?":{}|<>]/;
-    
-    if (password.length < minLength) {
-      return false;
-    }
-    if (!specialCharPattern.test(password)) {
-      return false;
+
+    if (password.length < minLength || !specialCharPattern.test(password)) {
+        return false;
     }
     return true;
-  };
+};
 
+// Start the server
 app.listen(8000, () => {
     console.log('Server started on port 8000');
 });
 
+// Connect to MongoDB
 mongoose.connect(config.connectionString);
 
+// Middleware
 app.use(express.json());
 app.use(cors({ origin: "*" }));
 
+// Basic route
 app.get("/", (req, res) => {
     res.json({ data: "hello" });
 });
@@ -51,7 +52,7 @@ app.post("/create-account", async (req, res) => {
         return res.status(400).json({ error: true, message: "All fields are required" });
     }
 
-    if (validatePassword(password) === false){
+    if (!validatePassword(password)) {
         return res.status(400).json({ error: true, message: "Password does not meet requirements" });
     }
 
@@ -61,7 +62,6 @@ app.post("/create-account", async (req, res) => {
     }
 
     const user = new User({ fullName, email, password });
-    
     await user.save();
 
     const accessToken = jwt.sign({ user }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "10h" });
@@ -86,8 +86,7 @@ app.post("/login", async (req, res) => {
         return res.status(400).json({ message: "Invalid Credentials" });
     }
 
-    const user = { user: userInfo };
-    const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "10h" });
+    const accessToken = jwt.sign({ user: userInfo }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "10h" });
 
     return res.json({ error: false, message: "Login Successful", email, accessToken });
 });
@@ -97,7 +96,6 @@ app.get("/get-user", authenticateToken, async (req, res) => {
     const { user } = req.user;
 
     const isUser = await User.findOne({ _id: user._id });
-
     if (!isUser) {
         return res.sendStatus(401);
     }
@@ -108,9 +106,9 @@ app.get("/get-user", authenticateToken, async (req, res) => {
     });
 });
 
-// Add Note
+// Add Note API
 app.post("/add-note", authenticateToken, async (req, res) => {
-    const { title, content, tags } = req.body;
+    const { title, content, tags, assignedUsers, status, priority } = req.body;
     const { user } = req.user;
 
     if (!title.trim()) {
@@ -127,12 +125,9 @@ app.post("/add-note", authenticateToken, async (req, res) => {
             content,
             tags: tags || [],
             userId: user._id,
-            // isPinned,
-            // isComplete: isComplete ?? false,
-            // createdTime: new Date(),
-            // status,
-            // priority,
-            // assignedUsers,
+            assignedUsers: assignedUsers || [],
+            status: status,
+            priority: priority,
         });
 
         await note.save();
@@ -140,7 +135,7 @@ app.post("/add-note", authenticateToken, async (req, res) => {
         return res.json({
             error: false,
             note,
-            message: "Task added successfully",
+            message: "Note added successfully",
         });
 
     } catch (error) {
@@ -154,29 +149,32 @@ app.post("/add-note", authenticateToken, async (req, res) => {
 // Edit Note API
 app.put("/edit-note/:noteId", authenticateToken, async (req, res) => {
     const noteId = req.params.noteId;
-    const { title, content, tags, isPinned } = req.body;
+    const { title, content, tags, isPinned, assignedUsers, status, priority } = req.body;
     const { user } = req.user;
 
-    if (!title && !content && !tags) {
+    if (!title && !content && !tags && !assignedUsers && !status && !priority) {
         return res.status(400).json({ error: true, message: "No changes provided!" });
     }
 
     try {
-        const note=await Note.findOne({ _id: noteId, userId: user._id });
+        const note = await Note.findOne({ _id: noteId, userId: user._id });
 
-        if (!note){
+        if (!note) {
             return res.status(404).json({ error: true, message: "Note not found" });
         }
 
         if (title) note.title = title;
         if (content) note.content = content;
         if (tags) note.tags = tags;
-        if (isPinned) note.isPinned = isPinned;
+        if (isPinned !== undefined) note.isPinned = isPinned;
+        if (assignedUsers) note.assignedUsers = assignedUsers;
+        if (status) note.status = status;
+        if (priority) note.priority = priority;
 
         await note.save();
 
         return res.json({
-            error:false,
+            error: false,
             note,
             message: "Note updated successfully",
         });
@@ -184,16 +182,19 @@ app.put("/edit-note/:noteId", authenticateToken, async (req, res) => {
         return res.status(500).json({
             error: true,
             message: "Internal Server Error",
-        })
+        });
     }
 });
 
-// Get All Tasks
+
+// Get All Notes API
 app.get("/get-all-notes", authenticateToken, async (req, res) => {
     const { user } = req.user;
 
     try {
-        const notes = await Note.find({ userId: user._id }).sort({ isPinned: -1 });
+        const notes = await Note.find({ userId: user._id })
+            .populate('assignedUsers', 'fullName email') // Populate assignedUsers with relevant fields
+            .sort({ isPinned: -1 });
 
         return res.json({
             error: false,
@@ -206,7 +207,7 @@ app.get("/get-all-notes", authenticateToken, async (req, res) => {
             message: "Internal Server Error",
         });
     }
-})
+});
 
 // Delete Note API
 app.delete("/delete-note/:noteId", authenticateToken, async (req, res) => {
@@ -223,7 +224,7 @@ app.delete("/delete-note/:noteId", authenticateToken, async (req, res) => {
             });
         }
 
-        await Note.deleteOne({ _id: noteId, userId: user._id })
+        await Note.deleteOne({ _id: noteId, userId: user._id });
 
         return res.json({
             error: false,
@@ -239,25 +240,25 @@ app.delete("/delete-note/:noteId", authenticateToken, async (req, res) => {
     }
 });
 
-// Update isPinned Value
+// Update isPinned Value API
 app.put("/update-note-pinned/:noteId", authenticateToken, async (req, res) => {
     const noteId = req.params.noteId;
     const { isPinned } = req.body;
     const { user } = req.user;
 
     try {
-        const note=await Note.findOne({ _id: noteId, userId: user._id });
+        const note = await Note.findOne({ _id: noteId, userId: user._id });
 
-        if (!note){
+        if (!note) {
             return res.status(404).json({ error: true, message: "Note not found" });
         }
-        
+
         note.isPinned = isPinned;
 
         await note.save();
 
         return res.json({
-            error:false,
+            error: false,
             note,
             message: "Note updated successfully",
         });
@@ -265,12 +266,12 @@ app.put("/update-note-pinned/:noteId", authenticateToken, async (req, res) => {
         return res.status(500).json({
             error: true,
             message: "Internal Server Error",
-        })
+        });
     }
 });
 
-// Search API
-app.get("/search-notes/", authenticateToken, async (req, res) => {
+// Search Notes API
+app.get("/search-notes", authenticateToken, async (req, res) => {
     const { user } = req.user;
     const { query } = req.query;
 
@@ -282,23 +283,42 @@ app.get("/search-notes/", authenticateToken, async (req, res) => {
         const matchingNotes = await Note.find({
             userId: user._id,
             $or: [
-                { title: { $regex: new RegExp(query, "i")}},
-                { content: { $regex: new RegExp(query, "i")}},
+                { title: { $regex: new RegExp(query, "i") } },
+                { content: { $regex: new RegExp(query, "i") } },
             ],
-        })
+        });
 
         return res.json({
             error: false,
             notes: matchingNotes,
-            message: "Notes matching the serach query retrieved successfully"
-        })
+            message: "Notes matching the search query retrieved successfully",
+        });
     } catch (error) {
         return res.status(500).json({
             error: true,
             message: "Internal Server Error",
-        })
+        });
     }
 });
 
-module.exports = app;
+// Get All Users API
+app.get("/users", authenticateToken, async (req, res) => {
+    try {
+        const users = await User.find({}, "_id fullName email"); // Only select relevant fields
 
+        return res.json({
+            error: false,
+            users: users.map(user => ({
+                id: user._id,
+                name: user.fullName,
+                email: user.email,
+            })),
+            message: "All users fetched successfully",
+        });
+    } catch (error) {
+        return res.status(500).json({
+            error: true,
+            message: "Internal Server Error",
+        });
+    }
+});
