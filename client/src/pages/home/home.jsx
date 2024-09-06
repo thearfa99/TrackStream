@@ -171,7 +171,7 @@ const Home = () => {
 
 <div className='container mx-auto mt-8'>
         <div className='flex justify-between items-center mb-8'>
-          <h1 className='text-3xl font-bold'>Project Dashboard</h1>
+          <h1 className='text-3xl font-semibold'>Project Dashboard</h1>
           <button 
             className='bg-primary text-black py-2 px-4 rounded-full flex items-center hover:bg-blue-600'
             onClick={() => {
