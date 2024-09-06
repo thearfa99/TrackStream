@@ -169,15 +169,19 @@ const Home = () => {
         handleClearSearch={handleClearSearch}
       />
 
-      <div className='container mx-auto mt-8'>
-        <button 
-          className='w-16 h-16 flex items-center justify-center rounded-2xl bg-primary hover:bg-blue-600 mb-8' 
-          onClick={() => {
-            setOpenAddEditModal({ isShown: true, type: "add", data: null });
-          }}
-        >
-          <MdAdd className="text-[32px] text-white" />
-        </button>
+<div className='container mx-auto mt-8'>
+        <div className='flex justify-between items-center mb-8'>
+          <h1 className='text-3xl font-bold'>Project Dashboard</h1>
+          <button 
+            className='bg-primary text-black py-2 px-4 rounded-full flex items-center hover:bg-blue-600'
+            onClick={() => {
+              setOpenAddEditModal({ isShown: true, type: "add", data: null });
+            }}
+          >
+            <MdAdd className="text-[28px] mr-2" />
+            Add New Task
+          </button>
+        </div>
 
         {allNotes.length > 0 ? (
           <div className='grid grid-cols-4 gap-4 min-h-screen'>
