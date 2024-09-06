@@ -176,6 +176,8 @@ app.put("/edit-note/:noteId", authenticateToken, async (req, res) => {
             return res.status(404).json({ error: true, message: "Note not found" });
         }
 
+        //validation packages like joi
+        //loadash
         if (title) note.title = title;
         if (content) note.content = content;
         if (tags) note.tags = tags;
@@ -190,6 +192,7 @@ app.put("/edit-note/:noteId", authenticateToken, async (req, res) => {
         const assignedUserIds = assignedUsers || [];
         const users = await User.find({ _id: { $in: assignedUserIds } });
 
+        //Use Cofig file for message
         users.forEach(user => {
             postmarkClient.sendEmail({
                 From: process.env.FROM_EMAIL, // Your email address
@@ -212,7 +215,6 @@ app.put("/edit-note/:noteId", authenticateToken, async (req, res) => {
     }
 });
 
-
 // Get All Notes API
 app.get("/get-all-notes", authenticateToken, async (req, res) => {
     const { user } = req.user;
@@ -234,6 +236,8 @@ app.get("/get-all-notes", authenticateToken, async (req, res) => {
         });
     }
 });
+
+//Use interceptors for response
 
 // Delete Note API
 app.delete("/delete-note/:noteId", authenticateToken, async (req, res) => {
@@ -349,3 +353,5 @@ app.get("/users", authenticateToken, async (req, res) => {
         });
     }
 });
+
+//Date filters API
