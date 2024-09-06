@@ -173,7 +173,7 @@ const Home = () => {
         <div className='flex justify-between items-center mb-8'>
           <h1 className='text-3xl font-semibold'>Project Dashboard</h1>
           <button 
-            className='bg-primary text-black py-2 px-4 rounded-full flex items-center hover:bg-blue-600'
+            className='bg-primary text-black py-2 px-4 rounded-full flex items-center hover:bg-blue-600 cursor-pointer'
             onClick={() => {
               setOpenAddEditModal({ isShown: true, type: "add", data: null });
             }}
