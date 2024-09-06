@@ -178,7 +178,7 @@ const Home = () => {
               setOpenAddEditModal({ isShown: true, type: "add", data: null });
             }}
           >
-            <MdAdd className="text-[28px] mr-2" />
+            <MdAdd className="text-[23px] mr-2" />
             Add New Task
           </button>
         </div>
