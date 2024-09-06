@@ -10,8 +10,7 @@ const addeditnotes = ({ noteData, type, getAllNotes, onClose, showToastMessage }
     const [tags, setTags] = useState(noteData?.tags || []);
     const [status, setStatus] = useState(noteData?.status || "To-Do");
     const [priority, setPriority] = useState(noteData?.priority || "Medium");
-    
-    // Update to correctly map initial assignedUsers from noteData
+
     const [assignedUsers, setAssignedUsers] = useState(
         noteData?.assignedUsers?.map(user => ({
             value: user._id,
@@ -23,7 +22,6 @@ const addeditnotes = ({ noteData, type, getAllNotes, onClose, showToastMessage }
     const [allUsers, setAllUsers] = useState([]);
 
     useEffect(() => {
-        // Fetch the list of users when the component mounts
         const fetchUsers = async () => {
             try {
                 const response = await axiosInstance.get("/users");
@@ -50,7 +48,7 @@ const addeditnotes = ({ noteData, type, getAllNotes, onClose, showToastMessage }
                 tags,
                 status,
                 priority,
-                assignedUsers: assignedUsers.map(user => user.value), // Use the value property
+                assignedUsers: assignedUsers.map(user => user.value),
             });
 
             if (response.data && response.data.note) {
@@ -59,11 +57,7 @@ const addeditnotes = ({ noteData, type, getAllNotes, onClose, showToastMessage }
                 onClose();
             }
         } catch (error) {
-            if ( 
-                error.response && 
-                error.response.data && 
-                error.response.data.message
-            ) {
+            if (error.response && error.response.data && error.response.data.message) {
                 setError(error.response.data.message);
             }
         }
@@ -78,7 +72,7 @@ const addeditnotes = ({ noteData, type, getAllNotes, onClose, showToastMessage }
                 tags,
                 status,
                 priority,
-                assignedUsers: assignedUsers.map(user => user.value), // Use the value property
+                assignedUsers: assignedUsers.map(user => user.value),
             });
 
             if (response.data && response.data.note) {
@@ -87,11 +81,7 @@ const addeditnotes = ({ noteData, type, getAllNotes, onClose, showToastMessage }
                 onClose();
             }
         } catch (error) {
-            if ( 
-                error.response && 
-                error.response.data && 
-                error.response.data.message
-            ) {
+            if (error.response && error.response.data && error.response.data.message) {
                 setError(error.response.data.message);
             }
         }
@@ -146,48 +136,50 @@ const addeditnotes = ({ noteData, type, getAllNotes, onClose, showToastMessage }
                 />
             </div>
 
-            <div className='mt-3'>
-                <label className='input-label'>TAGS</label>
-                <Taginput tags={tags} setTags={setTags} />
-            </div>
+            <div className='flex flex-wrap gap-3 mt-3'>
+                <div className='w-full md:w-1/2'>
+                    <label className='input-label'>TAGS</label>
+                    <Taginput tags={tags} setTags={setTags} />
+                </div>
 
-            <div className='mt-3'>
-                <label className='input-label'>STATUS</label>
-                <select
-                    className='text-sm text-slate-950 outline-none bg-slate-50 p-2 rounded'
-                    value={status}
-                    onChange={({ target }) => setStatus(target.value)}
-                >
-                    <option value="To-Do">To-Do</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Review">Review</option>
-                    <option value="Complete">Complete</option>
-                </select>
-            </div>
+                <div className='w-full md:w-1/2'>
+                    <label className='input-label'>STATUS</label>
+                    <select
+                        className='text-sm text-slate-950 outline-none bg-slate-50 p-2 rounded'
+                        value={status}
+                        onChange={({ target }) => setStatus(target.value)}
+                    >
+                        <option value="To-Do">To-Do</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Review">Review</option>
+                        <option value="Complete">Complete</option>
+                    </select>
+                </div>
 
-            <div className='mt-3'>
-                <label className='input-label'>PRIORITY</label>
-                <select
-                    className='text-sm text-slate-950 outline-none bg-slate-50 p-2 rounded'
-                    value={priority}
-                    onChange={({ target }) => setPriority(target.value)}
-                >
-                    <option value="Medium">Medium</option>
-                    <option value="Low">Low</option>
-                    <option value="High">High</option>
-                </select>
-            </div>
+                <div className='w-full md:w-1/2'>
+                    <label className='input-label'>PRIORITY</label>
+                    <select
+                        className='text-sm text-slate-950 outline-none bg-slate-50 p-2 rounded'
+                        value={priority}
+                        onChange={({ target }) => setPriority(target.value)}
+                    >
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                        <option value="High">High</option>
+                    </select>
+                </div>
 
-            <div className='mt-3'>
-                <label className='input-label'>ASSIGN USERS</label>
-                <Select
-                    isMulti
-                    options={allUsers}
-                    value={assignedUsers}
-                    onChange={setAssignedUsers}
-                    className='text-sm text-slate-950 outline-none bg-slate-50 p-2 rounded'
-                    placeholder="Select Users"
-                />
+                <div className='w-full md:w-1/2'>
+                    <label className='input-label'>ASSIGN USERS</label>
+                    <Select
+                        isMulti
+                        options={allUsers}
+                        value={assignedUsers}
+                        onChange={setAssignedUsers}
+                        className='text-sm text-slate-950 outline-none bg-slate-50 p-2 rounded'
+                        placeholder="Select Users"
+                    />
+                </div>
             </div>
 
             {error && <p className='text-red-500 text-xs pt-4'>{error}</p>}

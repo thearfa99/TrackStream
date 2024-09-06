@@ -169,16 +169,16 @@ const Home = () => {
         handleClearSearch={handleClearSearch}
       />
 
-<div className='container mx-auto mt-8'>
+      <div className='container mx-auto mt-8'>
         <div className='flex justify-between items-center mb-8'>
           <h1 className='text-3xl font-semibold'>Project Dashboard</h1>
           <button 
-            className='bg-primary text-black py-2 px-4 rounded-full flex items-center hover:bg-blue-600'
+            className='bg-primary text-black py-2 px-4 rounded-full flex items-center hover:bg-blue-600 cursor-pointer'
             onClick={() => {
               setOpenAddEditModal({ isShown: true, type: "add", data: null });
             }}
           >
-            <MdAdd className="text-[28px] mr-2" />
+            <MdAdd className="text-[23px] mr-2" />
             Add New Task
           </button>
         </div>
