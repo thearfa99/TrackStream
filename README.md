@@ -5,5 +5,6 @@ This tool features:
 - task management 
 - real-time updates
 - automated notifications
+- custom UI
   
 ### React, Node.js, Express, MongoDB Atlas and Tailwind CSS.
